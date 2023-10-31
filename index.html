@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ular Tangga</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+      crossorigin="anonymous"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <h1 style="margin-left: 36%;">Ini adalah ular Tangga</h1>
+    <h2>Dadu = </h2>
+    <button id="roll">Ayo lempar dadu</button>
+    <button id="refresh">Main Lagi</button>
+    <div class="container" style="margin-left: 30%">
+    </div>
+
+    <script>
+      var container = $(".container");
+
+      function Board() {
+        var boxSize = 50;
+        var rows    = 1;
+        var cols    = 10;
+        var reverse = false;
+
+        for (var i    = 10; i >= rows; i--) {
+          for (var j  = 1; j <= cols; j++) {
+            var box   = $("<div class='box-1'></div>");
+            var p     = $("<p></p>");
+            var value = reverse ? (i - 1) * cols + j : (i - 1) * cols + cols - j + 1;
+            p.text(value);
+            box.css({
+              width: boxSize + "px",
+              height: boxSize + "px",
+              backgroundColor: "aqua",
+              display: "inline-block",
+              margin: "5px",
+            });
+            box.append(p);
+            container.append(box);
+          }
+          reverse = !reverse;
+          container.append("<br/>");
+        }
+      }
+
+      Board();
+      var aa = 0;
+      var gameWon = false;
+
+      function dice() {
+        if (gameWon) {
+          return
+        }
+
+        var rand_number = Math.floor(Math.random() * 6) + 1;
+        aa += rand_number;
+        $("h2").html("Dadu = " + rand_number);
+
+        var rowNumber = 10 - Math.floor((aa - 1) / 10);
+        var boxNumber = (rowNumber % 2 === 0) ? (aa % 10) : (10 - aa % 10 + 1);
+
+        $(".box-1").css("background-color", "aqua");
+        $(".box-1").eq((rowNumber - 1) * 10 + boxNumber - 1).css("background-color", "red");
+
+        if (aa >= 100) {
+          alert("Anda Menang!");
+          $(".box-1").css("background-color", "aqua");
+          $(".box-1").eq(0).css("background-color", "red");
+          gameWon = true;
+          $("#roll").prop("disabled", true);
+          return;
+        }
+        // console.log(aa);
+      }
+
+      $(document).ready(function () {
+        $("#roll").click(dice);
+      });
+
+      $("#refresh").click(function () {
+        location.reload();
+      });
+    </script>
+  </body>
+</html>
