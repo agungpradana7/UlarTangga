@@ -13,15 +13,27 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   </head>
   <body>
-    <h1 style="margin-left: 36%;">Ini adalah ular Tangga</h1>
-    <h2>Dadu = </h2>
+    <h1 style="margin-left: 36%">Ini adalah Ular Tangga</h1>
+    <h2>Dadu =</h2>
     <button id="roll">Ayo lempar dadu</button>
-    <button id="refresh">Main Lagi</button>
-    <div class="container" style="margin-left: 30%">
-    </div>
+    <button id="refresh">Main Lagi</button> <br />
+
+    <ul id="history-list"></ul>
+    <table style="position: fixed">
+      <tr>
+        <td colspan="2">
+          <ul id="dice-history"></ul>
+        </td>
+      </tr>
+    </table>
+
+    <div class="container" style="margin-left: 30%"></div>
 
     <script>
-      var container = $(".container");
+      var container      = $(".container");
+      var playerPosition = 0;
+      var diceHistory    = [];
+      var gameWon        = false;
 
       function Board() {
         var boxSize = 50;
@@ -30,7 +42,7 @@
         var reverse = false;
 
         for (var i    = 10; i >= rows; i--) {
-          for (var j  = 1; j <= cols; j++) {
+          for (var j  = 1; j  <= cols; j++) {
             var box   = $("<div class='box-1'></div>");
             var p     = $("<p></p>");
             var value = reverse ? (i - 1) * cols + j : (i - 1) * cols + cols - j + 1;
@@ -51,24 +63,74 @@
       }
 
       Board();
-      var aa = 0;
-      var gameWon = false;
+
+      function updateDiceHistory() {
+        var diceHistoryList = $("#dice-history");
+        diceHistoryList.empty();
+
+        for (var i = 0; i < diceHistory.length; i++) {
+          var listItem = $("<li></li>");
+          var link     = $("<a></a>");
+          link.attr("href", "#");
+          link.text("Roll ke " + (i + 1) + " : " + diceHistory[i]);
+          link.on("click", function () {
+            var rollIndex = $(this).text().match(/\d+/)[0] - 1;
+            rollbackToRoll(rollIndex);
+          });
+          listItem.append(link);
+          diceHistoryList.append(listItem);
+        }
+      }
+
+      function rollbackToRoll(rollIndex) {
+        if (rollIndex < diceHistory.length) {
+          playerPosition = 0;
+          for (var i = 0; i <= rollIndex; i++) {
+            var rollValue   = diceHistory[i];
+            playerPosition += rollValue;
+          }
+
+          diceHistory   = diceHistory.slice(0, rollIndex + 1);
+
+          var rowNumber = 10 - Math.floor((playerPosition - 1) / 10);
+          var boxNumber;
+
+          if (rowNumber % 2 === 0) {
+            boxNumber = playerPosition % 10 === 0 ? 10 : playerPosition % 10;
+          } else {
+            boxNumber = playerPosition % 10 === 0 ? 1 : 10 - (playerPosition % 10) + 1;
+          }
+
+          $(".box-1").css("background-color", "aqua");
+          $(".box-1").eq((rowNumber - 1) * 10 + boxNumber - 1).css("background-color", "red");
+        }
+      }
 
       function dice() {
         if (gameWon) {
           return;
         }
+
         var rand_number = Math.floor(Math.random() * 6) + 1;
-        aa += rand_number;
         $("h2").html("Dadu = " + rand_number);
 
-        var rowNumber = 10 - Math.floor((aa - 1) / 10);
-        var boxNumber = (rowNumber % 2 === 0) ? (aa % 10) : (10 - aa % 10 + 1);
+        diceHistory.push(rand_number);
+        updateDiceHistory();
 
-        $(".box-1").css("background-color", "aqua");
-        $(".box-1").eq((rowNumber - 1) * 10 + boxNumber - 1).css("background-color", "red");
+        if (playerPosition % 10 === 0) {
+          playerPosition += rand_number;
+          if (playerPosition % 10 === 1) {
+            playerPosition -= rand_number;
+          }
+        } else {
+          playerPosition += rand_number;
+        }
 
-        if (aa >= 100) {
+        if (playerPosition > 100) {
+          playerPosition = 100;
+        }
+
+        if (playerPosition === 100) {
           alert("Anda Menang!");
           $(".box-1").css("background-color", "aqua");
           $(".box-1").eq(0).css("background-color", "red");
@@ -76,6 +138,18 @@
           $("#roll").prop("disabled", true);
           return;
         }
+
+        var rowNumber = 10 - Math.floor((playerPosition - 1) / 10);
+        var boxNumber;
+
+        if (rowNumber % 2 === 0) {
+          boxNumber = playerPosition % 10 === 0 ? 10 : playerPosition % 10;
+        } else {
+          boxNumber = playerPosition % 10 === 0 ? 1 : 10 - (playerPosition % 10) + 1;
+        }
+
+        $(".box-1").css("background-color", "aqua");
+        $(".box-1").eq((rowNumber - 1) * 10 + boxNumber - 1).css("background-color", "red");
       }
 
       $(document).ready(function () {
@@ -85,6 +159,7 @@
       $("#refresh").click(function () {
         location.reload();
       });
+
     </script>
   </body>
 </html>
